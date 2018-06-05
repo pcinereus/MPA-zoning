@@ -323,21 +323,23 @@ MPA_RAPPlot <- function(dat, ytitle, title, stat='median', purpose='Web') {
             dat = dat %>% mutate(Value=Median)
             #ytitle=substitute(ytitle,list(Mean=Median))
         }
+        max.y = max(dat$upper, na.rm=TRUE)*1.25
+        
         p <-ggplot(dat, aes(y=Value, x=cYear, fill=Zone,color=Zone)) +
-            geom_blank(aes(x=1,y=0))+
+            geom_blank() + #aes(x=1,y=0))+
             geom_line(aes(x=as.numeric(cYear)),position=position_dodge(width=0.1))+
             geom_linerange(aes(ymin=lower, ymax=upper),position=position_dodge(width=0.1), show.legend=FALSE)+
             geom_point(position=position_dodge(width=0.1), size=2)+
                                         #facet_grid(~Sector, switch='x')+
-            scale_fill_manual('Zone', breaks=c('Closed','Open'), labels=c('Fishing prohibited','Open to fishing'),values=c('forestgreen','blue'))+
-            scale_color_manual('Zone', breaks=c('Closed','Open'), labels=c('Fishing prohibited','Open to fishing'),values=c('forestgreen','blue'))+
+            scale_fill_manual('', breaks=c('Closed','Open'), labels=c('Fishing prohibited','Open to fishing'),values=c('forestgreen','blue'))+
+            scale_color_manual('', breaks=c('Closed','Open'), labels=c('Fishing prohibited','Open to fishing'),values=c('forestgreen','blue'))+
                                         #scale_y_continuous(expression(paste(Trout~biomass~"(per 1000", m^2, ")", sep="")), labels=comma)+
-            scale_y_continuous(ytitle, labels=comma)+
+            scale_y_continuous(ytitle, labels=comma, limits=c(0,max.y))+
             scale_x_discrete('Year')+
             theme_classic() +
             ggtitle(title)
         p<-p+theme(legend.position=c(1,1), legend.justification=c(1,1),
-                   legend.direction = 'horizontal',
+                   legend.direction = 'horizontal', legend.background=element_blank(),
                    strip.background=element_blank(),strip.text.x=element_text(size=12),
                    axis.title.y=element_text(vjust=1.5),
                    panel.spacing=unit(1,unit='lines'), axis.text.x=element_text(size=10),
@@ -399,6 +401,7 @@ MPA_inla <- function(data,fam='nbinomial',link='log') {
     ## n.3 = (nrow(dat)+1):(nrow(dat)+nrow(newdata3))
     ## dat <- rbind(dat, newdata3) %>% as.data.frame
     INLA:::inla.dynload.workaround()
+    if (grepl('beta',fam)) dat = dat %>% mutate(Value=ifelse(Value==0,0.01,Value))
     if (length(unique(data$Sector))>1) {
         dat.inla <- inla(Value~Sector*cYear*Zone+
                              f(Pair, model='iid') + #,hyper=list(theta=list(prior='loggamma', params=c(0,0.01)))) +
@@ -625,6 +628,8 @@ MPA_stan <- function(dat, cellmeans,family='zero_inflated_negbinomial') {
     if (grepl('*.link=logit.*',family)) {dat1 = dat %>% mutate(Value=Value/100)
     }else if (grepl('^Gamma.*',family)) {dat1 = dat %>% mutate(Value=Value)
     }else dat1 = dat %>% mutate(Value=as.integer(Value))
+
+    if (grepl('Beta',family)) dat1 = dat1 %>% mutate(Value=ifelse(Value==0,0.01,Value))
 
     link=gsub('.*link=(.*)\\)','\\1',family)
     priors = MPA_makePriors(cellmeans,data=dat1, link=link)

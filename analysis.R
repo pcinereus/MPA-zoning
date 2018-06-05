@@ -211,6 +211,7 @@ for (i in names(labels)) {
     cat('STAN (via brms)===============\n')
     dat.stan <- MPA_stan(dat, cellmeans, family=ms[,'stan.family'])
     save(dat.stan, file=paste0('data/dat.stan_',i,'_',sec,'.RData'))
+    load(file=paste0('data/dat.stan_',i,'_',sec,'.RData'))
     cellmeans.stan = MPA_cellmeans_stan(dat.stan)
     #MPA_rawPlot(cellmeans.stan[[1]], ytitle=labels[[i]])
     p=MPA_RAPPlot(cellmeans.stan[[1]], ytitle=labels[[i]], title=titles[[i]],purpose=purpose)
