@@ -194,6 +194,7 @@ for (i in names(labels)) {
     
     cat('\n\nINLA========================\n')
     dat.inla<-MPA_inla(dat,fam=as.character(ms[,'INLA.family']), link=as.character(ms[,'INLA.link']))
+    save(dat.inla, file=paste0('data/dat.inla_',i,'_',sec,'.RData'))
     cellmeans.inla <- MPA_inla.cellmeans(dat,dat.inla)
     cm.inla[[i]] <- cellmeans.inla
     cat('### INLA modelled means\n\n')
@@ -208,6 +209,7 @@ for (i in names(labels)) {
     MPA_sectorPlot(cellmeans.inla[['cellmeans.sector']], ytitle=labels[[i]])
     cat('STAN (via brms)===============\n')
     dat.stan <- MPA_stan(dat, cellmeans, family=ms[,'stan.family'])
+    save(dat.stan, file=paste0('data/dat.stan_',i,'_',sec,'.RData'))
     cellmeans.stan = MPA_cellmeans_stan(dat.stan)
     #MPA_rawPlot(cellmeans.stan[[1]], ytitle=labels[[i]])
     p=MPA_RAPPlot(cellmeans.stan[[1]], ytitle=labels[[i]], title=titles[[i]],purpose=purpose)

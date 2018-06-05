@@ -324,10 +324,10 @@ MPA_RAPPlot <- function(dat, ytitle, title, stat='median', purpose='Web') {
             #ytitle=substitute(ytitle,list(Mean=Median))
         }
         p <-ggplot(dat, aes(y=Value, x=cYear, fill=Zone,color=Zone)) +
-            geom_blank()+
+            geom_blank(aes(x=2006,y=0))+
             geom_line(aes(x=as.numeric(cYear)),position=position_dodge(width=0.1))+
             geom_linerange(aes(ymin=lower, ymax=upper),position=position_dodge(width=0.1), show.legend=FALSE)+
-            geom_point(position=position_dodge(width=0.1), size=1.5)+
+            geom_point(position=position_dodge(width=0.1), size=2)+
                                         #facet_grid(~Sector, switch='x')+
             scale_fill_manual('Zone', breaks=c('Closed','Open'), labels=c('Fishing prohibited','Open to fishing'),values=c('forestgreen','blue'))+
             scale_color_manual('Zone', breaks=c('Closed','Open'), labels=c('Fishing prohibited','Open to fishing'),values=c('forestgreen','blue'))+
@@ -615,7 +615,7 @@ MPA_makePriors <- function(cellmeans, data, link='log') {
     #b<-solve(t(X)%*%X)%*%t(X)%*%y
     #OR
     b<-solve(crossprod(Xmat), crossprod(Xmat,coefs))
-    priors$b = c(0, abs(round(link(sd(b[-1])),2)))
+    priors$b = c(0, abs(round((sd(b[-1])),2)))
     priors
 }
 
@@ -646,19 +646,19 @@ MPA_stan <- function(dat, cellmeans,family='zero_inflated_negbinomial') {
     print(form)
     if (grepl('^Beta.*',family)) {
         dat.stan = brm(form, data=dat1,
-                       family=Beta(link='logit'), iter = 1000, warmup = 500, thin=1, chains=1,
+                       family=Beta(link='logit'), iter = 2000, warmup = 1000, thin=3, chains=3,
                        prior=prior)
     } else if (grepl('^Gamma.*',family)) {
                 dat.stan = brm(form, data=dat1,
-                       family=Gamma(link='log'), iter = 1000, warmup = 500, thin=1, chains=1,
+                       family=Gamma(link='log'), iter = 2000, warmup = 1000, thin=3, chains=3,
                        prior=prior)
     } else if (grepl('^zero_inflated_negbinomial.*',family)) {
        dat.stan = brm(form, data=dat1,
-                       family='zero_inflated_negbinomial', iter = 1000, warmup = 500, thin=1, chains=1,
+                       family='zero_inflated_negbinomial', iter = 2000, warmup = 1000, thin=3, chains=3,
                        prior=prior)
     } else {
         dat.stan = brm(form, data=dat1,
-                       family='negbinomial', iter = 1000, warmup = 500, thin=1, chains=1,
+                       family='negbinomial', iter = 2000, warmup = 1000, thin=3, chains=3,
                        prior=prior)
     }
     
