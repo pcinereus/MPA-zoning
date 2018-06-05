@@ -324,7 +324,7 @@ MPA_RAPPlot <- function(dat, ytitle, title, stat='median', purpose='Web') {
             #ytitle=substitute(ytitle,list(Mean=Median))
         }
         p <-ggplot(dat, aes(y=Value, x=cYear, fill=Zone,color=Zone)) +
-            geom_blank(aes(x=2006,y=0))+
+            geom_blank(aes(x=1,y=0))+
             geom_line(aes(x=as.numeric(cYear)),position=position_dodge(width=0.1))+
             geom_linerange(aes(ymin=lower, ymax=upper),position=position_dodge(width=0.1), show.legend=FALSE)+
             geom_point(position=position_dodge(width=0.1), size=2)+
