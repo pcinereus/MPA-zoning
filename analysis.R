@@ -195,6 +195,7 @@ for (i in names(labels)) {
     cat('\n\nINLA========================\n')
     dat.inla<-MPA_inla(dat,fam=as.character(ms[,'INLA.family']), link=as.character(ms[,'INLA.link']))
     save(dat.inla, file=paste0('data/dat.inla_',i,'_',sec,'.RData'))
+    load(file=paste0('data/dat.inla_',i,'_',sec,'.RData'))
     cellmeans.inla <- MPA_inla.cellmeans(dat,dat.inla)
     cm.inla[[i]] <- cellmeans.inla
     cat('### INLA modelled means\n\n')
