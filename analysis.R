@@ -190,6 +190,7 @@ for (i in names(labels)) {
     p = MPA_RAPPlot(cellmeans, ytitle=labels[[i]], title=titles[[i]], stat='mean',purpose=purpose)
     ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_raw.pdf'), p,width=5, height=3)
     ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_raw.png'), p,width=5, height=3, dpi=300)
+    ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_raw.jpg'), p,width=5, height=3, dpi=300)
     
     cat('\n\nINLA========================\n')
     dat.inla<-MPA_inla(dat,fam=as.character(ms[,'INLA.family']), link=as.character(ms[,'INLA.link']))
@@ -200,6 +201,7 @@ for (i in names(labels)) {
     p=MPA_RAPPlot(cellmeans.inla[[1]], ytitle=labels[[i]], title=titles[[i]],purpose=purpose)
     ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_INLA.pdf'), p,width=5, height=3)
     ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_INLA.png'), p,width=5, height=3, dpi=300)
+    ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_INLA.jpg'), p,width=5, height=3, dpi=300)
     
     cat('\n\n')
     cat('### INLA modelled sector means\n\n')
@@ -211,6 +213,7 @@ for (i in names(labels)) {
     p=MPA_RAPPlot(cellmeans.stan[[1]], ytitle=labels[[i]], title=titles[[i]],purpose=purpose)
     ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_stan.pdf'), p,width=5, height=3)
     ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_stan.png'), p,width=5, height=3, dpi=300)
+    ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_stan.jpg'), p,width=5, height=3, dpi=300)
     
     MPA_sectorPlot(cellmeans.stan[['SectorZoneMeans']], ytitle=labels[[i]])
     cm.stan[[i]] <- cellmeans.stan    
