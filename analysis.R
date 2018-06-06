@@ -36,7 +36,7 @@
 ##     'All' in which case, all sectors will be modelled in a single model
 
 purpose = 'Web' #'Reports'
-sector = 'Pompeys' #'All'
+sector = 'Cairns' #'All'
     
 library(dplyr)
 library(tidyr)
@@ -217,7 +217,7 @@ for (i in names(labels)) {
     p=MPA_RAPPlot(cellmeans.stan[[1]], ytitle=labels[[i]], title=titles[[i]],purpose=purpose)
     ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_stan.pdf'), p,width=5, height=3)
     ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_stan.png'), p,width=5, height=3, dpi=300)
-    ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_stan.jpg'), p,width=5, height=3, dpi=300)
+    ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_stan.jpg'), p,width=3.5, height=2.223, dpi=300)
     
     MPA_sectorPlot(cellmeans.stan[['SectorZoneMeans']], ytitle=labels[[i]])
     cm.stan[[i]] <- cellmeans.stan    
