@@ -324,6 +324,7 @@ MPA_RAPPlot <- function(dat, ytitle, title, stat='median', purpose='Web') {
             #ytitle=substitute(ytitle,list(Mean=Median))
         }
         max.y = max(dat$upper, na.rm=TRUE)*1.25
+        #if (grepl('cover',ytitle)) max.y=100
         
         p <-ggplot(dat, aes(y=Value, x=cYear, fill=Zone,color=Zone)) +
             geom_blank() + #aes(x=1,y=0))+
@@ -332,10 +333,11 @@ MPA_RAPPlot <- function(dat, ytitle, title, stat='median', purpose='Web') {
             geom_point(position=position_dodge(width=0.1), size=2)+
                                         #facet_grid(~Sector, switch='x')+
             scale_fill_manual('', breaks=c('Closed','Open'), labels=c('Fishing prohibited','Open to fishing'),values=c('forestgreen','blue'))+
-            scale_color_manual('', breaks=c('Closed','Open'), labels=c('Fishing prohibited','Open to fishing'),values=c('forestgreen','blue'))+
+            scale_color_manual('', breaks=c('Closed','Open'), labels=c('Fishing prohibited','Open to fishing'),values=c('forestgreen','blue'))
                                         #scale_y_continuous(expression(paste(Trout~biomass~"(per 1000", m^2, ")", sep="")), labels=comma)+
-            scale_y_continuous(ytitle, labels=comma, limits=c(0,max.y))+
-            scale_x_discrete('Year')+
+        if (any(all.vars(ytitle) == 'cover')) p=p+scale_y_continuous(ytitle, breaks=seq(0,100,by=20),labels=seq(0,100,by=20), limits=c(0,max.y))
+        if (!any(all.vars(ytitle) == 'cover')) p = p+scale_y_continuous(ytitle, labels=comma, limits=c(0,max.y))
+        p=p+scale_x_discrete('Year')+
             theme_classic() +
             ggtitle(title)
         p<-p+theme(legend.position=c(1,1), legend.justification=c(1,1),
