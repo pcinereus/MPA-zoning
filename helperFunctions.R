@@ -250,7 +250,7 @@ MPA_makeLabels <- function(type='Reports') {
         
         labels[['Species Richness']] = expression(Species~Richness~(per~site))
         
-        labels[['A']] = expression(Macroalgae~cover~('%'))
+        labels[['A']] = expression(Algal~cover~('%'))
         labels[['HC']] = expression(Hard~coral~cover~('%'))
         labels[['SC']] = expression(Soft~coral~cover~('%'))
     } else {
@@ -260,7 +260,7 @@ MPA_makeLabels <- function(type='Reports') {
         labels[['trout']] = expression(Median~abundance~per~Site)
         labels[['herbivores']] = expression(Median~abundance~per~Site)
         labels[['secondary_targets']] = expression(Median~abundance~per~Site)
-        labels[['A']] = expression(Macroalgae~cover~('%'))
+        labels[['A']] = expression(Algal~cover~('%'))
         labels[['HC']] = expression(Hard~coral~cover~('%'))
         labels[['SC']] = expression(Soft~coral~cover~('%'))
     }
