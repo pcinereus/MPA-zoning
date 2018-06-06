@@ -203,7 +203,7 @@ for (i in names(labels)) {
     p=MPA_RAPPlot(cellmeans.inla[[1]], ytitle=labels[[i]], title=titles[[i]],purpose=purpose)
     ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_INLA.pdf'), p,width=5, height=3)
     ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_INLA.png'), p,width=5, height=3, dpi=300)
-    ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_INLA.jpg'), p,width=5, height=3, dpi=300)
+    ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_INLA.jpg'), p,width=3.5, height=2.223, dpi=300)
     
     cat('\n\n')
     cat('### INLA modelled sector means\n\n')
