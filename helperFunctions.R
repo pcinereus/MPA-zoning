@@ -165,8 +165,8 @@ MPA_group <- function(data) {
 
     do.call('rbind', data) %>%
         dplyr::select(Group,Sector,SHELF,Pair,Zone,Reef,Site,Transect,Year,cYear,Value) %>%
-        bind_rows(richness) %>%
-        filter(!is.na(Value))
+        bind_rows(richness) #%>%
+        #filter(!is.na(Value))
 }
 
 
@@ -188,7 +188,8 @@ MPA_calculateDensities <- function(data) {
 MPA_calculateBiomass <- function(data, lw_conv){
     data = data %>% #gather(key='Species', value='Value', contains('_')) %>%
         left_join(lw_conv) %>%
-            mutate(Biomass=SumOfABUNDANCE*a*LENGTH^b)
+        #mutate(Biomass=SumOfABUNDANCE*a*LENGTH^b)
+        mutate(Biomass=Value*a*LENGTH^b)
     data
 }
 
@@ -218,14 +219,21 @@ MPA_benthosgroups <- function(data) {
 
 MPA_transectAgg <- function(data) {
     data %>% group_by(Group,Sector,SHELF,Pair,Zone,Reef,Site,Transect,cYear,Year) %>%
-        summarize(Value=ifelse(unique(Group) %in% c('Coral Trout Length', 'Secondary target Length'), mean(Value,na.rm=TRUE),
+        summarize(Value=ifelse(unique(Group) %in% c('Coral Trout Length', 'Secondary targets Length'), mean(Value,na.rm=TRUE),
                                 sum(Value,na.rm=TRUE)))
 }
 
+## The following is not correct once we have expressed everything as a density.
+## Rather than be sum it should be mean
+## MPA_siteAgg <- function(data) {
+##     data %>% group_by(Group,Sector,SHELF,Pair,Reef,Site,Zone,cYear,Year) %>%
+##         summarize(Value=ifelse(unique(Group) %in% c('Coral Trout Length', 'Secondary target Length','A','HC','SC'), mean(Value,na.rm=TRUE),
+##                                 sum(Value,na.rm=TRUE)))
+## }
 MPA_siteAgg <- function(data) {
     data %>% group_by(Group,Sector,SHELF,Pair,Reef,Site,Zone,cYear,Year) %>%
-        summarize(Value=ifelse(unique(Group) %in% c('Coral Trout Length', 'Secondary target Length','A','HC','SC'), mean(Value,na.rm=TRUE),
-                                sum(Value,na.rm=TRUE)))
+        summarize(Value=ifelse(unique(Group) %in% c('Coral Trout Length', 'Secondary targets Length','A','HC','SC'), mean(Value,na.rm=TRUE),
+                                mean(Value,na.rm=TRUE)))
 }
 
 
@@ -346,34 +354,38 @@ MPA_RAPPlot <- function(dat, ytitle, title, stat='median', purpose='Web') {
                    axis.title.y=element_text(vjust=1.5),
                    panel.spacing=unit(1,unit='lines'), axis.text.x=element_text(size=10),
                    axis.line.y=element_line(), axis.line.x=element_line(),strip.placement='outside')
+    } else if (purpose=='Reports') {
+        if(stat=='mean') {
+            p <-ggplot(dat, aes(y=Mean, x=cYear, fill=Zone, shape=Zone,linetype=Zone)) +
+                geom_blank()+
+                geom_line(aes(x=as.numeric(cYear)))+
+                geom_errorbar(aes(ymin=lower, ymax=upper),width=0.1, linetype=1)+geom_point()+
+                facet_grid(~Sector, switch='x')+
+                scale_fill_manual('Zone', breaks=c('Closed','Open'), labels=c('Reserve','Non-reserve'),values=c('black','white'))+
+                scale_shape_manual('Zone', breaks=c('Closed','Open'), labels=c('Reserve','Non-reserve'),values=c(21,21))+
+                scale_linetype_manual('Zone', breaks=c('Closed','Open'), labels=c('Reserve','Non-reserve'),values=c(1,2))+
+                                        #scale_y_continuous(expression(paste(Trout~biomass~"(per 1000", m^2, ")", sep="")), labels=comma)+
+                scale_y_continuous(ytitle, labels=comma)+
+                                        #scale_x_continuous('', breaks=2006:2014)+
+                theme_classic()
+        } else {
+            p <-ggplot(dat, aes(y=Median, x=cYear, fill=Zone, shape=Zone,linetype=Zone)) +
+                geom_blank()+
+                geom_line(aes(x=as.numeric(cYear)))+
+                geom_errorbar(aes(ymin=lower, ymax=upper),width=0.1, linetype=1)+geom_point()+
+                facet_grid(~Sector,switch='x')+
+                scale_fill_manual('Zone', breaks=c('Closed','Open'), labels=c('Reserve','Non-reserve'),values=c('black','white'))+
+                scale_shape_manual('Zone', breaks=c('Closed','Open'), labels=c('Reserve','Non-reserve'),values=c(21,21))+
+                scale_linetype_manual('Zone', breaks=c('Closed','Open'), labels=c('Reserve','Non-reserve'),values=c(1,2))+
+                                        #scale_y_continuous(expression(paste(Trout~biomass~"(per 1000", m^2, ")", sep="")), labels=comma)+
+                scale_y_continuous(ytitle, labels=comma)+
+                                        #scale_x_continuous('', breaks=2006:2014)+
+                theme_classic()
+        }
+        p<-p+theme(legend.position=c(1,1), legend.justification=c(1,1), strip.background=element_blank(),strip.text.x=element_text(size=12),
+                   axis.title.y=element_text(vjust=1.5), axis.title.x=element_blank(),panel.margin=unit(1,unit='lines'), axis.text.x=element_text(size=10),
+                   axis.line.y=element_line(), axis.line.x=element_line(),strip.placement='outside')
     }
-    ## if(stat=='mean') {
-    ##     p <-ggplot(dat, aes(y=Mean, x=cYear, fill=Zone, shape=Zone,linetype=Zone)) +
-    ##         geom_blank()+
-    ##         geom_line(aes(x=as.numeric(cYear)))+
-    ##         geom_errorbar(aes(ymin=lower, ymax=upper),width=0.1, linetype=1)+geom_point()+
-    ##             facet_grid(~Sector, switch='x')+
-    ##                 scale_fill_manual('Zone', breaks=c('Closed','Open'), labels=c('Reserve','Non-reserve'),values=c('black','white'))+
-    ##                     scale_shape_manual('Zone', breaks=c('Closed','Open'), labels=c('Reserve','Non-reserve'),values=c(21,21))+
-    ##                         scale_linetype_manual('Zone', breaks=c('Closed','Open'), labels=c('Reserve','Non-reserve'),values=c(1,2))+
-    ##                                     #scale_y_continuous(expression(paste(Trout~biomass~"(per 1000", m^2, ")", sep="")), labels=comma)+
-    ##                             scale_y_continuous(ytitle, labels=comma)+
-    ##                                     #scale_x_continuous('', breaks=2006:2014)+
-    ##                                 theme_classic()
-    ## } else {
-    ##     p <-ggplot(dat, aes(y=Median, x=cYear, fill=Zone, shape=Zone,linetype=Zone)) +
-    ##         geom_blank()+
-    ##         geom_line(aes(x=as.numeric(cYear)))+
-    ##         geom_errorbar(aes(ymin=lower, ymax=upper),width=0.1, linetype=1)+geom_point()+
-    ##             facet_grid(~Sector,switch='x')+
-    ##                 scale_fill_manual('Zone', breaks=c('Closed','Open'), labels=c('Reserve','Non-reserve'),values=c('black','white'))+
-    ##                     scale_shape_manual('Zone', breaks=c('Closed','Open'), labels=c('Reserve','Non-reserve'),values=c(21,21))+
-    ##                         scale_linetype_manual('Zone', breaks=c('Closed','Open'), labels=c('Reserve','Non-reserve'),values=c(1,2))+
-    ##                                     #scale_y_continuous(expression(paste(Trout~biomass~"(per 1000", m^2, ")", sep="")), labels=comma)+
-    ##                             scale_y_continuous(ytitle, labels=comma)+
-    ##                                     #scale_x_continuous('', breaks=2006:2014)+
-    ##                                 theme_classic()
-    ## }
 
     #g <- ggplotGrob(p)
     #print(p)
@@ -403,7 +415,7 @@ MPA_inla <- function(data,fam='nbinomial',link='log') {
     ## n.3 = (nrow(dat)+1):(nrow(dat)+nrow(newdata3))
     ## dat <- rbind(dat, newdata3) %>% as.data.frame
     INLA:::inla.dynload.workaround()
-    if (grepl('beta',fam)) dat = dat %>% mutate(Value=ifelse(Value==0,0.01,Value))
+    if (grepl('(beta|gamma)',fam)) dat = dat %>% mutate(Value=ifelse(Value==0,0.01,Value))
     if (length(unique(data$Sector))>1) {
         dat.inla <- inla(Value~Sector*cYear*Zone+
                              f(Pair, model='iid') + #,hyper=list(theta=list(prior='loggamma', params=c(0,0.01)))) +
@@ -612,7 +624,7 @@ MPA_makePriors <- function(cellmeans, data, link='log') {
     priors=list()
                                         #priors$intercept=c(mu=log(cellmeans[1,'Mean']), sd=log(2*cellmeans[1,'upper']-cellmeans[1,'lower']))
     #priors$intercept=c(mu=round(log(median(data$Value)),2), sd=round(log(sd(data$Value)),2))
-    priors$intercept=c(round(link(median(data$Value)),2), abs(round(link(sd(data$Value)),2)))
+    priors$intercept=c(round(link(median(data$Value, na.rm=TRUE)),2), abs(round(link(sd(data$Value,na.rm=TRUE)),2)))
 
     if (length(unique(data$Sector))>1) Xmat = model.matrix(~Sector*cYear*Zone, data=cellmeans)
     if (length(unique(data$Sector))==1) Xmat = model.matrix(~cYear*Zone, data=cellmeans)

@@ -59,7 +59,11 @@ source('helperFunctions.R')
 
 ## Make sure all the directories and subdirectories are in place
 if (!dir.exists('figures')) dir.create('figures')
+if (!dir.exists('figures/Web')) dir.create('figures/Web')
+if (!dir.exists('figures/Reports')) dir.create('figures/Reports')
 if (!dir.exists('data')) dir.create('data')
+if (!dir.exists('data/Web')) dir.create('data/Web')
+if (!dir.exists('data/Reports')) dir.create('data/Reports')
 
 ################################################################
 ## Extract data sources from the databases                    ##
@@ -151,10 +155,12 @@ data = fish.site %>% bind_rows(benthos.site) %>% as.data.frame
 if (purpose=='Reports') save(data, file='data/reports.data.RData')
 if (purpose=='Web') save(data, file='data/web.data.RData')
 
-###############################################################
-## Generate a model safe version of Year that can be used in ##
-## autocorrelation models                                    ##
-###############################################################
+###################################################################
+## Generate a model safe version of Year that can be used in     ##
+## autocorrelation models.                                       ##
+## Note also that there were some surveys conducted in 2017 that ##
+## should not be part of this analyses - remove them.            ##
+###################################################################
 data = data %>% mutate(Time=Year-min(Year)) %>% filter(cYear!=2017) %>% droplevels
 
 #################################################################################
@@ -188,9 +194,15 @@ for (i in names(labels)) {
     cm[[i]] <- cellmeans
     #MPA_rawPlot(cellmeans, ytitle=labels[[i]], stat='mean')
     p = MPA_RAPPlot(cellmeans, ytitle=labels[[i]], title=titles[[i]], stat='mean',purpose=purpose)
-    ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_raw.pdf'), p,width=5, height=3)
-    ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_raw.png'), p,width=5, height=3, dpi=300)
-    ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_raw.jpg'), p,width=5, height=3, dpi=300)
+    if (purpose=='Web') {
+        ggsave(filename=paste0('figures/',purpose,'/RAPPlot_',i,'_',sec,'_raw.pdf'), p,width=5, height=3)
+        ggsave(filename=paste0('figures/',purpose,'/RAPPlot_',i,'_',sec,'_raw.png'), p,width=5, height=3, dpi=300)
+        ggsave(filename=paste0('figures/',purpose,'/RAPPlot_',i,'_',sec,'_raw.jpg'), p,width=5, height=3, dpi=300)
+    } else {
+        ggsave(filename=paste0('figures/',purpose,'/RAPPlot_',i,'_',sec,'_raw.pdf'), p,width=15, height=5)
+        ggsave(filename=paste0('figures/',purpose,'/RAPPlot_',i,'_',sec,'_raw.png'), p,width=15, height=5, dpi=300)
+        ggsave(filename=paste0('figures/',purpose,'/RAPPlot_',i,'_',sec,'_raw.jpg'), p,width=15, height=5, dpi=300)
+    }
     
     cat('\n\nINLA========================\n')
     dat.inla<-MPA_inla(dat,fam=as.character(ms[,'INLA.family']), link=as.character(ms[,'INLA.link']))
@@ -201,13 +213,22 @@ for (i in names(labels)) {
     cat('### INLA modelled means\n\n')
                                         #MPA_rawPlot(cellmeans.inla[[1]], ytitle=labels[[i]])
     p=MPA_RAPPlot(cellmeans.inla[[1]], ytitle=labels[[i]], title=titles[[i]],purpose=purpose)
-    ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_INLA.pdf'), p,width=5, height=3)
-    ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_INLA.png'), p,width=5, height=3, dpi=300)
-    ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_INLA.jpg'), p,width=3.5, height=2.223, dpi=300)
+    if (purpose=='Web') {
+        ggsave(filename=paste0('figures/',purpose,'/RAPPlot_',i,'_',sec,'_INLA.pdf'), p,width=5, height=3)
+        ggsave(filename=paste0('figures/',purpose,'/RAPPlot_',i,'_',sec,'_INLA.png'), p,width=5, height=3, dpi=300)
+        ggsave(filename=paste0('figures/',purpose,'/RAPPlot_',i,'_',sec,'_INLA.jpg'), p,width=3.5, height=2.223, dpi=300)
+    } else {
+        ggsave(filename=paste0('figures/',purpose,'/RAPPlot_',i,'_',sec,'_INLA.pdf'), p,width=15, height=5)
+        ggsave(filename=paste0('figures/',purpose,'/RAPPlot_',i,'_',sec,'_INLA.png'), p,width=15, height=5, dpi=300)
+        ggsave(filename=paste0('figures/',purpose,'/RAPPlot_',i,'_',sec,'_INLA.jpg'), p,width=15, height=5, dpi=300)
+    }
     
     cat('\n\n')
     cat('### INLA modelled sector means\n\n')
-    MPA_sectorPlot(cellmeans.inla[['cellmeans.sector']], ytitle=labels[[i]])
+    p = MPA_sectorPlot(cellmeans.inla[['cellmeans.sector']], ytitle=labels[[i]])
+    if (purpose=='Reports') {
+        ggsave(filename=paste0('figures/',purpose,'/RAPSectorMeansPlot_',i,'_',sec,'_INLA.pdf'), p,width=15, height=5)
+    }
     cat('STAN (via brms)===============\n')
     dat.stan <- MPA_stan(dat, cellmeans, family=ms[,'stan.family'])
     save(dat.stan, file=paste0('data/dat.stan_',i,'_',sec,'.RData'))
@@ -215,18 +236,29 @@ for (i in names(labels)) {
     cellmeans.stan = MPA_cellmeans_stan(dat.stan)
     #MPA_rawPlot(cellmeans.stan[[1]], ytitle=labels[[i]])
     p=MPA_RAPPlot(cellmeans.stan[[1]], ytitle=labels[[i]], title=titles[[i]],purpose=purpose)
-    ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_stan.pdf'), p,width=5, height=3)
-    ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_stan.png'), p,width=5, height=3, dpi=300)
-    ggsave(filename=paste0('figures/RAPPlot_',i,'_',sec,'_stan.jpg'), p,width=3.5, height=2.223, dpi=300)
-    
-    MPA_sectorPlot(cellmeans.stan[['SectorZoneMeans']], ytitle=labels[[i]])
+    if (purpose=='Web') {
+        ggsave(filename=paste0('figures/',purpose,'/RAPPlot_',i,'_',sec,'_stan.pdf'), p,width=5, height=3)
+        ggsave(filename=paste0('figures/',purpose,'/RAPPlot_',i,'_',sec,'_stan.png'), p,width=5, height=3, dpi=300)
+        ggsave(filename=paste0('figures/',purpose,'/RAPPlot_',i,'_',sec,'_stan.jpg'), p,width=3.5, height=2.223, dpi=300)
+    } else {
+        ggsave(filename=paste0('figures/',purpose,'/RAPPlot_',i,'_',sec,'_stan.pdf'), p,width=15, height=5)
+        ggsave(filename=paste0('figures/',purpose,'/RAPPlot_',i,'_',sec,'_stan.png'), p,width=15, height=5, dpi=300)
+        ggsave(filename=paste0('figures/',purpose,'/RAPPlot_',i,'_',sec,'_stan.jpg'), p,width=15, height=5, dpi=300)
+    }
+    p = MPA_sectorPlot(cellmeans.stan[['SectorZoneMeans']], ytitle=labels[[i]])
+    if (purpose=='Reports') {
+        ggsave(filename=paste0('figures/',purpose,'/RAPSectorMeansPlot_',i,'_',sec,'_stan.pdf'), p,width=15, height=5)
+    }
     cm.stan[[i]] <- cellmeans.stan    
     cat('\\clearpage\n\n')
 
-    save(cm,file=paste0('data/cm_',sec,'.RData'))
-    save(cm.inla,file=paste0('data/cm.inla_',sec,'.RData'))
-    save(cm.stan,file=paste0('data/cm.stan_',sec,'.RData'))  
+    if (purpose=='Web') {
+        save(cm,file=paste0('data/cm_',sec,'.RData'))
+        save(cm.inla,file=paste0('data/cm.inla_',sec,'.RData'))
+        save(cm.stan,file=paste0('data/cm.stan_',sec,'.RData'))
+    }
+        
 }
-save(cm,file='data/cm.RData')
-save(cm.inla,file='data/cm.inla.RData')
-save(cm.stan,file='data/cm.stan.RData')  
+save(cm,file=paste0('data/',purpose,'/cm.RData'))
+save(cm.inla,file=paste0('data/',purpose,'/cm.inla.RData'))
+save(cm.stan,file=paste0('data/',purpose,'/cm.stan.RData'))
